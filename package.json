@@ -39,7 +39,6 @@
     "cordis.patch.yml",
     "presets",
     "lib/client.js",
-    "lib/client.js.map",
     "lib/host-plugin.js",
     "lib/host-plugin.js.map",
     "lib/typert.host.js",

@@ -96,6 +96,12 @@ Older engines with that service retain the existing card implementation.
 On the PA2573, cold restart after the patch renders the main application
 instead of the pending-plugin error screen.
 
+The upstream `lib/client.js.map` predates this hand-patched bundle and embeds
+the removed mandatory dependency. This prebuilt adaptation does not include
+the source build pipeline, so remove the stale map, its bundle reference, and
+its package entry together. Browser debugging uses the actual generated
+`lib/client.js` until a matching source map can be rebuilt from source.
+
 ## Android execution limitation
 
 The bundled Codex App Server does not support Android arm64. The host logs
