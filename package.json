@@ -1,6 +1,6 @@
 {
   "name": "relay-dsh-plugin-codex",
-  "version": "0.2.4-mavis.1",
+  "version": "0.2.4-mavis.2",
   "description": "Codex conversation backend for DeepSeek Harness, powered by the Codex App Server with approvals and DSH tool support. (reknottycat build: DSH 0.1.7-rc.2 adaptation, see PATCHES.md)",
   "keywords": [
     "dsh-plugin",
@@ -39,7 +39,6 @@
     "cordis.patch.yml",
     "presets",
     "lib/client.js",
-    "lib/client.js.map",
     "lib/host-plugin.js",
     "lib/host-plugin.js.map",
     "lib/typert.host.js",
@@ -104,6 +103,7 @@
     "relay-dsh-plugin-session-import": "0.2.3"
   },
   "scripts": {
+    "test": "node --test scripts/settings-compat.test.mjs",
     "note": "prebuilt distribution - see PATCHES.md"
   }
 }

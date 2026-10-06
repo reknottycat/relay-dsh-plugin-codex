@@ -4,7 +4,7 @@ Upstream: [`relay-dsh-plugin-codex@0.2.4`](https://www.npmjs.com/package/relay-d
 (author: [yangbobo2021](https://github.com/yangbobo2021/relay-dsh-plugin-codex), MIT)
 
 This tree is upstream `0.2.4` plus the patches below. Nothing else was touched.
-The goal is to make the plugin **load and run** on DeepSeek Harness `0.1.7-rc.2`
+The goal is to make the plugin **load without blocking the application** on DeepSeek Harness `0.1.7-rc.2`
 (the engine shipped in `reknottycat/dsh-mobile-apk`), which is what the user's
 vivo PA2573 tablet runs.
 
@@ -73,16 +73,41 @@ forced through with `dsh allow-version … --accept-risk`). Appending
 `|| 0.1.7-rc.2` to `@deepseek-ai/dsh-llm`, `@deepseek-ai/dsh-session` and
 `@deepseek-ai/dsh-typert-protocol` lets it install normally, with no risk flag.
 
-> The same `0.2.4` release already migrated its own `dsh.client.inject` list to
-> `@deepseek-ai/dsh-client-store`, so the client half is 0.1.7-ready; only this
-> peer cap and the one `installSection` call were left behind.
+The `dsh.client.inject` package list already uses `dsh-client-store`, but that
+alone does not establish client compatibility: the separate service dependency
+list still required the removed `settingsScope` service (see P4).
 
 ---
 
 ## P3 — version
 
-`0.2.4` → `0.2.4-mavis.1`, so the adapted build is distinguishable from the
-upstream artifact of the same code shape.
+`0.2.4-mavis.2` adds P4 to the earlier `0.2.4-mavis.1` host adaptation.
+
+## P4 — client settings service must not prevent web boot
+
+The real device displayed `Failed to load plugins`, with
+`relay-dsh-plugin-codex: pending (waiting for service: settingsScope)`.
+The client declared the removed service as mandatory even though it is used
+only by the optional runtime settings card. Remove that mandatory dependency
+and skip the card when `ctx.get("settingsScope")` has no `bind` method.
+Older engines with that service retain the existing card implementation.
+
+`npm test` covers both missing-service boot and the available-service card.
+On the PA2573, cold restart after the patch renders the main application
+instead of the pending-plugin error screen.
+
+The upstream `lib/client.js.map` predates this hand-patched bundle and embeds
+the removed mandatory dependency. This prebuilt adaptation does not include
+the source build pipeline, so remove the stale map, its bundle reference, and
+its package entry together. Browser debugging uses the actual generated
+`lib/client.js` until a matching source map can be rebuilt from source.
+
+## Android execution limitation
+
+The bundled Codex App Server does not support Android arm64. The host logs
+this explicitly. Loading this plugin does **not** verify Codex conversations;
+those require a compatible external command configured as `codexCommand`.
+The settings card is unavailable on 0.1.7, as described in P1.
 
 ---
 
@@ -91,4 +116,5 @@ upstream artifact of the same code shape.
 * Engine: `@deepseek-ai/dsh@0.1.7-rc.2`, Node `v24.18.0`, profile `web`.
 * Install: `dsh plugin add github:reknottycat/relay-dsh-plugin-codex`
   (no `allow-version` / `--accept-risk` needed).
-* Cold boot: no `Failed to load plugins` banner.
+* The original mavis.1 check covered host boot only; real UI verification found
+  the P4 failure. After P4, the main application renders on the device.
